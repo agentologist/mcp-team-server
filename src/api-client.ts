@@ -117,4 +117,186 @@ export class ContentApiClient {
       return false;
     }
   }
+
+  // ==================== KEYWORD RESEARCH METHODS ====================
+
+  async getKeywordData(keywords: string[], apiKey: string, country: string = 'US'): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/keywords/data', {
+        keywords,
+        apiKey,
+        country,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Keyword data failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async getRelatedKeywords(keyword: string, apiKey: string, country: string = 'US', limit: number = 100): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/keywords/related', {
+        keyword,
+        apiKey,
+        country,
+        limit,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Related keywords failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async performEnhancedKeywordResearch(seedKeyword: string, apiKey: string, country: string = 'US', options: any = {}): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/keywords/enhanced', {
+        seedKeyword,
+        apiKey,
+        country,
+        options,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Enhanced keyword research failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async categorizeKeywords(keywords: string[]): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/keywords/categorize', {
+        keywords,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Keyword categorization failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async clusterKeywords(keywords: string[]): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/keywords/cluster', {
+        keywords,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Keyword clustering failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  // ==================== TOPIC & NEWS RESEARCH METHODS ====================
+
+  async searchNews(query: string): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/news/search', {
+        query,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`News search failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async deepResearchTopic(title: string, link: string, snippet?: string): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/topic/deep-research', {
+        title,
+        link,
+        snippet,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Deep research failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async analyzeViralPotential(article: { title: string; link?: string; snippet?: string }): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/article/viral-analysis', {
+        article,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Viral analysis failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async getTrendingQuestions(topic: string): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/topic/trending-questions', {
+        topic,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Trending questions failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async researchHeadline(headline: string): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/headline/research', {
+        headline,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Headline research failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async performEnhancedTopicSearch(query: string): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/topic/enhanced-search', {
+        query,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Enhanced topic search failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async getWebsiteContext(urls: string[]): Promise<any> {
+    try {
+      const response = await this.client.post('/api/research/website/context', {
+        urls,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Website context failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
 }

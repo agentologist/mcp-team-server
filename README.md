@@ -8,11 +8,32 @@ AI Content Generator MCP (Model Context Protocol) Server for Agentologist.
 
 ## Overview
 
-This MCP server provides AI-powered content generation tools that can be used by AI agents through the Model Context Protocol. It exposes three main tools:
+This MCP server provides AI-powered content generation and research tools that can be used by AI agents through the Model Context Protocol.
 
+### **15 Tools Available** (v0.2.0)
+
+**Content Generation (3 tools):**
 1. **generate_content** - Generate new content based on prompts
 2. **refine_content** - Refine and improve existing content
 3. **analyze_content** - Analyze content for quality and suggestions
+
+**Keyword Research (5 tools):**
+4. **keyword_data** - Get search volume, CPC, and competition data
+5. **related_keywords** - Find related keywords and variations
+6. **enhanced_keyword_research** - AI-powered comprehensive keyword research
+7. **categorize_keywords** - Classify keywords by search intent
+8. **cluster_keywords** - Group keywords into topic clusters
+
+**Topic & News Research (7 tools):**
+9. **search_news** - Search Google News with AI grounding
+10. **deep_research_topic** - Deep dive on articles and topics
+11. **analyze_viral_potential** - Predict content virality
+12. **trending_questions** - Generate trending headline ideas
+13. **research_headline** - Validate headline concepts
+14. **enhanced_topic_search** - Enhanced search with trend analysis
+15. **website_context** - Extract context from URLs
+
+📖 **[View detailed tool documentation](TOOLS.md)**
 
 ## Installation
 

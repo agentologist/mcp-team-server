@@ -1,6 +1,6 @@
 {
   "name": "@agentologist/content-tool-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI Content Generator MCP Server for Agentologist",
   "type": "module",
   "main": "dist/index.js",

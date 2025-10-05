@@ -10,6 +10,8 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { ContentApiClient } from "./api-client.js";
+import { RESEARCH_TOOLS } from "./research-tools.js";
+import { ResearchHandlers } from "./research-handlers.js";
 
 // Content generation tool definitions
 const CONTENT_TOOLS: Tool[] = [
@@ -79,16 +81,18 @@ const CONTENT_TOOLS: Tool[] = [
 class ContentToolMCPServer {
   private server: Server;
   private apiClient: ContentApiClient;
+  private researchHandlers: ResearchHandlers;
 
   constructor() {
     // Get API URL from environment or use default
     const apiUrl = process.env.CONTENT_API_URL || 'http://localhost:3001';
     this.apiClient = new ContentApiClient(apiUrl);
+    this.researchHandlers = new ResearchHandlers(this.apiClient);
 
     this.server = new Server(
       {
         name: "agentologist-content-tool",
-        version: "0.1.0",
+        version: "0.2.0",
       },
       {
         capabilities: {
@@ -101,9 +105,9 @@ class ContentToolMCPServer {
   }
 
   private setupHandlers() {
-    // List available tools
+    // List available tools - combine content and research tools
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: CONTENT_TOOLS,
+      tools: [...CONTENT_TOOLS, ...RESEARCH_TOOLS],
     }));
 
     // Handle tool calls
@@ -112,12 +116,42 @@ class ContentToolMCPServer {
 
       try {
         switch (name) {
+          // Content generation tools
           case "generate_content":
             return await this.handleGenerateContent(args);
           case "refine_content":
             return await this.handleRefineContent(args);
           case "analyze_content":
             return await this.handleAnalyzeContent(args);
+
+          // Keyword research tools
+          case "keyword_data":
+            return await this.researchHandlers.handleKeywordData(args);
+          case "related_keywords":
+            return await this.researchHandlers.handleRelatedKeywords(args);
+          case "enhanced_keyword_research":
+            return await this.researchHandlers.handleEnhancedKeywordResearch(args);
+          case "categorize_keywords":
+            return await this.researchHandlers.handleCategorizeKeywords(args);
+          case "cluster_keywords":
+            return await this.researchHandlers.handleClusterKeywords(args);
+
+          // Topic & news research tools
+          case "search_news":
+            return await this.researchHandlers.handleSearchNews(args);
+          case "deep_research_topic":
+            return await this.researchHandlers.handleDeepResearchTopic(args);
+          case "analyze_viral_potential":
+            return await this.researchHandlers.handleAnalyzeViralPotential(args);
+          case "trending_questions":
+            return await this.researchHandlers.handleTrendingQuestions(args);
+          case "research_headline":
+            return await this.researchHandlers.handleResearchHeadline(args);
+          case "enhanced_topic_search":
+            return await this.researchHandlers.handleEnhancedTopicSearch(args);
+          case "website_context":
+            return await this.researchHandlers.handleWebsiteContext(args);
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
