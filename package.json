@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js",
+    "dev:http": "tsx src/server-http.ts",
+    "start": "node dist/server-http.js",
+    "start:stdio": "node dist/index.js",
     "watch": "tsx watch src/index.ts"
   },
   "keywords": [
@@ -18,8 +20,10 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@types/express": "^5.0.3",
     "axios": "^1.12.2",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
