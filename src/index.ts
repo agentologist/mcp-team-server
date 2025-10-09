@@ -8,30 +8,28 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ContentApiClient } from "./api-client.js";
-import { RESEARCH_TOOLS } from "./research-tools.js";
-import { ResearchHandlers } from "./research-handlers.js";
-import { CONTENT_TOOLS, ContentToolHandlers } from "./content-tools.js";
 
-class ContentToolMCPServer {
+/**
+ * MCP Team Server
+ *
+ * This is a clean protocol layer ready for tool definitions.
+ * Tools will be added in the future as separate microservices are built.
+ *
+ * To add tools:
+ * 1. Create /src/tools/ directory
+ * 2. Define tool schemas in tool files (e.g., keyword-research.ts)
+ * 3. Import and register tools in this file
+ */
+
+class MCPTeamServer {
   private server: Server;
-  private apiClient: ContentApiClient;
-  private researchHandlers: ResearchHandlers;
-  private contentHandlers: ContentToolHandlers;
+  private tools: any[] = []; // Empty until tools are defined
 
   constructor() {
-    // Get API URL and token from environment
-    const apiUrl = process.env.CONTENT_API_URL || 'http://localhost:3001';
-    const apiToken = process.env.CONTENT_API_TOKEN;
-
-    this.apiClient = new ContentApiClient(apiUrl, apiToken);
-    this.researchHandlers = new ResearchHandlers(this.apiClient);
-    this.contentHandlers = new ContentToolHandlers(this.apiClient);
-
     this.server = new Server(
       {
-        name: "agentologist-content-tool",
-        version: "0.2.0",
+        name: "mcp-team-server",
+        version: "1.0.0",
       },
       {
         capabilities: {
@@ -41,79 +39,45 @@ class ContentToolMCPServer {
     );
 
     this.setupHandlers();
+    this.logStartup();
+  }
+
+  private logStartup() {
+    console.error(`✅ MCP Team Server started`);
+    console.error(`✅ Loaded ${this.tools.length} tool definitions`);
+    if (this.tools.length === 0) {
+      console.error(`⚠️  No tools defined yet - server is ready for tool definitions`);
+    }
   }
 
   private setupHandlers() {
-    // List available tools - combine content and research tools
+    // List available tools
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [...CONTENT_TOOLS, ...RESEARCH_TOOLS],
+      tools: this.tools,
     }));
 
     // Handle tool calls
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
+      const { name } = request.params;
 
-      try {
-        switch (name) {
-          // Content generation tools
-          case "generate_content":
-            return await this.contentHandlers.handleGenerate(args);
-          case "refine_content":
-            return await this.contentHandlers.handleRefine(args);
-          case "analyze_content":
-            return await this.contentHandlers.handleAnalyze(args);
-
-          // Keyword research tools
-          case "keyword_data":
-            return await this.researchHandlers.handleKeywordData(args);
-          case "related_keywords":
-            return await this.researchHandlers.handleRelatedKeywords(args);
-          case "enhanced_keyword_research":
-            return await this.researchHandlers.handleEnhancedKeywordResearch(args);
-          case "categorize_keywords":
-            return await this.researchHandlers.handleCategorizeKeywords(args);
-          case "cluster_keywords":
-            return await this.researchHandlers.handleClusterKeywords(args);
-
-          // Topic & news research tools
-          case "search_news":
-            return await this.researchHandlers.handleSearchNews(args);
-          case "deep_research_topic":
-            return await this.researchHandlers.handleDeepResearchTopic(args);
-          case "analyze_viral_potential":
-            return await this.researchHandlers.handleAnalyzeViralPotential(args);
-          case "trending_questions":
-            return await this.researchHandlers.handleTrendingQuestions(args);
-          case "research_headline":
-            return await this.researchHandlers.handleResearchHeadline(args);
-          case "enhanced_topic_search":
-            return await this.researchHandlers.handleEnhancedTopicSearch(args);
-          case "website_context":
-            return await this.researchHandlers.handleWebsiteContext(args);
-
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error: ${errorMessage}`,
-            },
-          ],
-        };
-      }
+      // No tools defined yet
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: No tools are defined yet. Tool "${name}" does not exist.`,
+          },
+        ],
+      };
     });
   }
 
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("Content Tool MCP server running on stdio");
+    console.error("MCP Team Server running on stdio");
   }
 }
 
-const server = new ContentToolMCPServer();
+const server = new MCPTeamServer();
 server.run().catch(console.error);

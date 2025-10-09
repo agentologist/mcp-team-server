@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
- * HTTP/SSE Server for MCP
+ * HTTP/SSE Server for MCP Team Server
  * Provides HTTP endpoints for server-to-server communication
+ *
+ * This is a clean protocol layer ready for tool definitions.
+ * Tools will be added in the future as separate microservices are built.
  */
 import dotenv from 'dotenv';
 dotenv.config();
@@ -13,23 +16,23 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ContentApiClient } from "./api-client.js";
-import { RESEARCH_TOOLS } from "./research-tools.js";
-import { ResearchHandlers } from "./research-handlers.js";
-import { CONTENT_TOOLS, ContentToolHandlers } from "./content-tools.js";
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = parseInt(process.env.PORT || '3001', 10);
 
-const apiUrl = process.env.CONTENT_API_URL || 'http://localhost:3001';
-const apiClient = new ContentApiClient(apiUrl);
-const researchHandlers = new ResearchHandlers(apiClient);
-const contentHandlers = new ContentToolHandlers(apiClient);
+// Empty tool list - tools will be added when microservices are built
+const allTools: any[] = [];
+
 const sseTransports = new Map<string, SSEServerTransport>();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', service: 'content-tool-mcp', version: '0.2.0' });
+  res.json({
+    status: 'ok',
+    tools: allTools.length,
+    server: 'mcp-team-server',
+    version: '1.0.0',
+  });
 });
 
 // SSE endpoint for MCP
@@ -44,8 +47,8 @@ app.get('/sse', async (req, res) => {
 
   const server = new Server(
     {
-      name: "agentologist-content-tool",
-      version: "0.2.0",
+      name: "mcp-team-server",
+      version: "1.0.0",
     },
     {
       capabilities: {
@@ -56,59 +59,21 @@ app.get('/sse', async (req, res) => {
 
   // Setup handlers
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: [...CONTENT_TOOLS, ...RESEARCH_TOOLS],
+    tools: allTools,
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
+    const { name } = request.params;
 
-    try {
-      switch (name) {
-        // Content generation tools
-        case "generate_content":
-          return await contentHandlers.handleGenerate(args);
-        case "refine_content":
-          return await contentHandlers.handleRefine(args);
-        case "analyze_content":
-          return await contentHandlers.handleAnalyze(args);
-
-        // Keyword research tools
-        case "keyword_data":
-          return await researchHandlers.handleKeywordData(args);
-        case "related_keywords":
-          return await researchHandlers.handleRelatedKeywords(args);
-        case "enhanced_keyword_research":
-          return await researchHandlers.handleEnhancedKeywordResearch(args);
-        case "categorize_keywords":
-          return await researchHandlers.handleCategorizeKeywords(args);
-        case "cluster_keywords":
-          return await researchHandlers.handleClusterKeywords(args);
-
-        // Topic & news research tools
-        case "search_news":
-          return await researchHandlers.handleSearchNews(args);
-        case "deep_research_topic":
-          return await researchHandlers.handleDeepResearchTopic(args);
-        case "analyze_viral_potential":
-          return await researchHandlers.handleAnalyzeViralPotential(args);
-        case "trending_questions":
-          return await researchHandlers.handleTrendingQuestions(args);
-        case "research_headline":
-          return await researchHandlers.handleResearchHeadline(args);
-        case "enhanced_topic_search":
-          return await researchHandlers.handleEnhancedTopicSearch(args);
-        case "website_context":
-          return await researchHandlers.handleWebsiteContext(args);
-
-        default:
-          throw new Error(`Unknown tool: ${name}`);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [{ type: "text", text: `Error: ${errorMessage}` }],
-      };
-    }
+    // No tools defined yet
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Error: No tools are defined yet. Tool "${name}" does not exist.`,
+        },
+      ],
+    };
   });
 
   await server.connect(transport);
@@ -140,12 +105,19 @@ app.post('/message', express.json(), (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '::' as any, () => {
   console.log('');
   console.log('╔════════════════════════════════════════════╗');
-  console.log('║  Content Tool MCP Server (HTTP/SSE)       ║');
+  console.log('║  MCP Team Server (HTTP/SSE)               ║');
   console.log(`║  Port: ${PORT.toString().padEnd(36)}║`);
   console.log('╚════════════════════════════════════════════╝');
+  console.log('');
+  console.log(`✅ MCP Team Server started on port ${PORT}`);
+  console.log(`✅ Loaded ${allTools.length} tool definitions`);
+  if (allTools.length === 0) {
+    console.log(`⚠️  No tools defined yet - server is ready for tool definitions`);
+  }
+  console.log(`📡 Binding to IPv6 (::) for Railway compatibility`);
   console.log('');
   console.log(`📊 Endpoints:`);
   console.log(`  Health: http://localhost:${PORT}/health`);

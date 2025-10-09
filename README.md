@@ -1,230 +1,160 @@
-# Content Tool MCP Server
+# MCP Team Server
 
-[![Build Status](https://github.com/agentologist/content-tool-mcp/workflows/Build%20and%20Test/badge.svg)](https://github.com/agentologist/content-tool-mcp/actions)
-
-AI Content Generator MCP (Model Context Protocol) Server for Agentologist.
-
-> **Note**: This MCP server integrates with the [AI Content Generator](https://github.com/agentologist/ai-content-generator) backend to provide AI-powered content generation through Claude Desktop.
+**Version 1.0.0** - Clean Gateway Ready for Tool Development
 
 ## Overview
 
-This MCP server provides AI-powered content generation and research tools that can be used by AI agents through the Model Context Protocol.
+The **MCP Team Server** is a clean, minimal gateway that provides the infrastructure for tool microservices. It's a pure protocol layer with **NO tools defined yet**.
 
-### **15 Tools Available** (v0.2.0)
+**Architecture:**
+```
+[Rowan] → [Riley] → [MCP Team Server] → (Future: Tool Microservices)
+```
 
-**Content Generation (3 tools):**
-1. **generate_content** - Generate new content based on prompts
-2. **refine_content** - Refine and improve existing content
-3. **analyze_content** - Analyze content for quality and suggestions
+### Current State
 
-**Keyword Research (5 tools):**
-4. **keyword_data** - Get search volume, CPC, and competition data
-5. **related_keywords** - Find related keywords and variations
-6. **enhanced_keyword_research** - AI-powered comprehensive keyword research
-7. **categorize_keywords** - Classify keywords by search intent
-8. **cluster_keywords** - Group keywords into topic clusters
+⚠️ **NO TOOLS EXIST YET** - This is an empty gateway ready for tool development.
 
-**Topic & News Research (7 tools):**
-9. **search_news** - Search Google News with AI grounding
-10. **deep_research_topic** - Deep dive on articles and topics
-11. **analyze_viral_potential** - Predict content virality
-12. **trending_questions** - Generate trending headline ideas
-13. **research_headline** - Validate headline concepts
-14. **enhanced_topic_search** - Enhanced search with trend analysis
-15. **website_context** - Extract context from URLs
-
-📖 **[View detailed tool documentation](TOOLS.md)**
+When you start the server, you'll see:
+```
+✅ MCP Team Server started on port 3001
+✅ Loaded 0 tool definitions
+⚠️  No tools defined yet - server is ready for tool definitions
+```
 
 ## Installation
 
 ```bash
 npm install
-```
-
-## Development
-
-```bash
-npm run dev
-```
-
-## Build
-
-```bash
 npm run build
 ```
 
-## Usage
+## Running
 
-### Available Tools
+### HTTP/SSE Server (Production)
+```bash
+npm start
+```
 
-#### 1. generate_content
-
-Generate AI-powered content based on a prompt and content type.
-
-**Parameters:**
-- `prompt` (required): The topic or prompt for content generation
-- `contentType` (required): Type of content - `blog`, `article`, `social`, `email`, `ad`, or `general`
-- `tone` (optional): Tone of content - `professional`, `casual`, `friendly`, `formal`, or `persuasive`
-- `length` (optional): Length - `short`, `medium`, or `long`
-
-#### 2. refine_content
-
-Refine and improve existing content based on specific instructions.
-
-**Parameters:**
-- `content` (required): The content to refine
-- `instructions` (required): Specific refinement instructions
-
-#### 3. analyze_content
-
-Analyze content for tone, readability, and get improvement suggestions.
-
-**Parameters:**
-- `content` (required): The content to analyze
+### Local Development
+```bash
+npm run dev:http  # HTTP/SSE mode
+npm run dev       # STDIO mode
+```
 
 ## Configuration
 
-### Claude Desktop
+Copy `.env.example` to `.env`:
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
-
-```json
-{
-  "mcpServers": {
-    "content-tool": {
-      "command": "node",
-      "args": ["/path/to/agentologist/content tool mcp/dist/index.js"]
-    }
-  }
-}
+```env
+PORT=3001
+NODE_OPTIONS=--dns-result-order=ipv4first
+ROWAN_URL=http://rowan.railway.internal:3000
 ```
 
-### AI Service Integration
+## Health Check
 
-This MCP server connects to the **AI Content Generator** backend application to provide real AI-powered content generation.
+```bash
+curl http://localhost:3001/health
+```
 
-**Prerequisites:**
-1. The AI Content Generator app must be running on `http://localhost:3001` (or your configured URL)
-2. The AI Content Generator backend must have a valid Gemini API key configured
-
-**Configuration:**
-
-1. Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Update the `.env` file with your AI Content Generator backend URL:
-   ```
-   CONTENT_API_URL=http://localhost:3001
-   ```
-
-3. Make sure the AI Content Generator backend is running:
-   ```bash
-   cd ../ai-content-generator
-   npm run backend:dev
-   ```
+Response:
+```json
+{
+  "status": "ok",
+  "tools": 0,
+  "server": "mcp-team-server",
+  "version": "1.0.0"
+}
+```
 
 ## Project Structure
 
 ```
-content tool mcp/
+mcp-team-server/
 ├── src/
-│   ├── index.ts          # Main MCP server implementation
-│   └── api-client.ts     # HTTP client for AI Content Generator API
-├── dist/                 # Compiled JavaScript output
-├── .env                  # Environment configuration (create from .env.example)
-├── .env.example          # Example environment configuration
+│   ├── index.ts          # STDIO server (no tools)
+│   └── server-http.ts    # HTTP/SSE server (no tools)
+├── dist/                 # Build output
+├── .env
 ├── package.json
-├── tsconfig.json
 └── README.md
 ```
 
-## Setup Instructions
+## Adding Tools (Future)
 
-### 1. Install Dependencies
-```bash
-npm install
+When ready to add tools:
+
+1. **Create structure:**
+   ```bash
+   mkdir -p src/tools src/handlers
+   ```
+
+2. **Define tool schema** in `src/tools/your-tool.ts`:
+   ```typescript
+   import { Tool } from "@modelcontextprotocol/sdk/types.js";
+
+   export const yourTools: Tool[] = [{
+     name: "your_tool",
+     description: "What it does",
+     inputSchema: { /* JSON schema */ }
+   }];
+
+   export async function handleYourTool(args: any) {
+     // Call your microservice here
+   }
+   ```
+
+3. **Register handlers** in `src/handlers/index.ts`:
+   ```typescript
+   import { handleYourTool } from "../tools/your-tool.js";
+
+   export const toolHandlers = {
+     your_tool: handleYourTool,
+   };
+   ```
+
+4. **Import in servers** (`src/index.ts` and `src/server-http.ts`):
+   ```typescript
+   import { yourTools } from "./tools/your-tool.js";
+   import { toolHandlers } from "./handlers/index.js";
+
+   const tools = [...yourTools];
+   ```
+
+## Connecting Riley
+
+In Riley's `.env`:
+```env
+MCP_SERVER_URL=http://mcp-team-server.railway.internal:3001/sse
+NODE_OPTIONS=--dns-result-order=ipv4first
 ```
 
-### 2. Build the Project
-```bash
-npm run build
-```
+Riley will connect successfully but receive 0 tools until you add them.
 
-### 3. Configure Environment
-```bash
-cp .env.example .env
-# Edit .env to set CONTENT_API_URL if different from default
-```
+## Railway Deployment
 
-### 4. Start the AI Content Generator Backend
-Make sure the AI Content Generator backend is running:
-```bash
-cd ../ai-content-generator
-npm run backend:dev
-```
+The server is configured for Railway:
+- Binds to IPv6 (`::`)
+- Uses `railway.json` for build/deploy config
+- Health endpoint at `/health`
 
-### 5. Add MCP Server to Claude Desktop Config
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+## Architecture Principles
 
-```json
-{
-  "mcpServers": {
-    "content-tool": {
-      "command": "node",
-      "args": ["/Users/grantgould/Vibe Coding/Agentologist/content tool mcp/dist/index.js"],
-      "env": {
-        "CONTENT_API_URL": "http://localhost:3001"
-      }
-    }
-  }
-}
-```
+✅ **What this server does:**
+- Pure MCP protocol layer
+- SSE and STDIO transport
+- Tool routing (when tools exist)
+- Health checks
 
-### 6. Restart Claude Desktop
-Restart Claude Desktop to load the MCP server.
+❌ **What this server doesn't do:**
+- No tool implementations
+- No business logic
+- No external API calls
+- No data processing
 
-## Testing
-
-You can test the MCP server locally:
-
-```bash
-npm run dev
-```
-
-Or test individual components:
-
-```bash
-# Test the API health endpoint
-curl http://localhost:3001/api/mcp/health
-```
-
-## Deployment
-
-See [RAILWAY.md](RAILWAY.md) for Railway deployment instructions.
-
-For local development and integration details, see [INTEGRATION.md](INTEGRATION.md).
-
-## Repository
-
-- **GitHub**: https://github.com/agentologist/content-tool-mcp
-- **Related**: [AI Content Generator](https://github.com/agentologist/ai-content-generator)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+**All tool logic belongs in separate microservices.**
 
 ## License
 
 MIT
-
-## Support
-
-For issues and questions:
-- GitHub Issues: https://github.com/agentologist/content-tool-mcp/issues
-- Documentation: See [README.md](README.md), [INTEGRATION.md](INTEGRATION.md), and [RAILWAY.md](RAILWAY.md)
