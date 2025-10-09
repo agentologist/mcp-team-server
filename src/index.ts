@@ -23,7 +23,23 @@ import {
 
 class MCPTeamServer {
   private server: Server;
-  private tools: any[] = []; // Empty until tools are defined
+  // Temporary echo tool so server has at least 1 tool for testing
+  private tools: any[] = [
+    {
+      name: "echo",
+      description: "Echo back the input text (test tool)",
+      inputSchema: {
+        type: "object",
+        properties: {
+          text: {
+            type: "string",
+            description: "Text to echo back",
+          },
+        },
+        required: ["text"],
+      },
+    },
+  ];
 
   constructor() {
     this.server = new Server(
@@ -44,9 +60,9 @@ class MCPTeamServer {
 
   private logStartup() {
     console.error(`✅ MCP Team Server started`);
-    console.error(`✅ Loaded ${this.tools.length} tool definitions`);
-    if (this.tools.length === 0) {
-      console.error(`⚠️  No tools defined yet - server is ready for tool definitions`);
+    console.error(`✅ Loaded ${this.tools.length} tool definition(s)`);
+    if (this.tools.length === 1 && this.tools[0].name === "echo") {
+      console.error(`⚠️  Running with temporary 'echo' test tool`);
     }
   }
 
@@ -58,14 +74,26 @@ class MCPTeamServer {
 
     // Handle tool calls
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name } = request.params;
+      const { name, arguments: args } = request.params;
 
-      // No tools defined yet
+      // Handle echo tool (temporary test tool)
+      if (name === "echo") {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Echo: ${(args as any)?.text || "no input"}`,
+            },
+          ],
+        };
+      }
+
+      // Unknown tool
       return {
         content: [
           {
             type: "text",
-            text: `Error: No tools are defined yet. Tool "${name}" does not exist.`,
+            text: `Error: Unknown tool "${name}"`,
           },
         ],
       };

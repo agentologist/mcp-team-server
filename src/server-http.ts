@@ -20,8 +20,24 @@ import {
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
-// Empty tool list - tools will be added when microservices are built
-const allTools: any[] = [];
+// Temporary echo tool so server has at least 1 tool for testing
+// This will be replaced with real tools later
+const allTools: any[] = [
+  {
+    name: "echo",
+    description: "Echo back the input text (test tool)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description: "Text to echo back",
+        },
+      },
+      required: ["text"],
+    },
+  },
+];
 
 const sseTransports = new Map<string, SSEServerTransport>();
 
@@ -63,14 +79,26 @@ app.get('/sse', async (req, res) => {
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name } = request.params;
+    const { name, arguments: args } = request.params;
 
-    // No tools defined yet
+    // Handle echo tool (temporary test tool)
+    if (name === "echo") {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Echo: ${(args as any)?.text || "no input"}`,
+          },
+        ],
+      };
+    }
+
+    // Unknown tool
     return {
       content: [
         {
           type: "text",
-          text: `Error: No tools are defined yet. Tool "${name}" does not exist.`,
+          text: `Error: Unknown tool "${name}"`,
         },
       ],
     };
