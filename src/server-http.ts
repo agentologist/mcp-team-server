@@ -16,36 +16,7 @@ import {
 import { ContentApiClient } from "./api-client.js";
 import { RESEARCH_TOOLS } from "./research-tools.js";
 import { ResearchHandlers } from "./research-handlers.js";
-
-// Content tools (copied from index.ts)
-const CONTENT_TOOLS = [
-  {
-    name: "generate_content",
-    description: "Generate AI-powered content based on a prompt and content type",
-    inputSchema: {
-      type: "object",
-      properties: {
-        prompt: { type: "string", description: "The prompt or topic for content generation" },
-        contentType: {
-          type: "string",
-          enum: ["blog", "article", "social", "email", "ad", "general"],
-          description: "The type of content to generate",
-        },
-        tone: {
-          type: "string",
-          enum: ["professional", "casual", "friendly", "formal", "persuasive"],
-          description: "The tone of the content (optional)",
-        },
-        length: {
-          type: "string",
-          enum: ["short", "medium", "long"],
-          description: "The desired length of the content (optional)",
-        },
-      },
-      required: ["prompt", "contentType"],
-    },
-  },
-];
+import { CONTENT_TOOLS, ContentToolHandlers } from "./content-tools.js";
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -53,6 +24,8 @@ const PORT = process.env.PORT || 3002;
 const apiUrl = process.env.CONTENT_API_URL || 'http://localhost:3001';
 const apiClient = new ContentApiClient(apiUrl);
 const researchHandlers = new ResearchHandlers(apiClient);
+const contentHandlers = new ContentToolHandlers(apiClient);
+const sseTransports = new Map<string, SSEServerTransport>();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -64,6 +37,11 @@ app.get('/sse', async (req, res) => {
   console.log('📡 New SSE connection from', req.ip);
 
   const transport = new SSEServerTransport('/message', res);
+  sseTransports.set(transport.sessionId, transport);
+  transport.onclose = () => {
+    sseTransports.delete(transport.sessionId);
+  };
+
   const server = new Server(
     {
       name: "agentologist-content-tool",
@@ -87,18 +65,12 @@ app.get('/sse', async (req, res) => {
     try {
       switch (name) {
         // Content generation tools
-        case "generate_content": {
-          const { prompt, contentType, tone = "professional", length = "medium" } = args || {};
-          const content = await apiClient.generateContent({
-            prompt: prompt as string,
-            contentType: contentType as "blog" | "article" | "social" | "email" | "ad" | "general",
-            tone: tone as "professional" | "casual" | "friendly" | "formal" | "persuasive",
-            length: length as "short" | "medium" | "long",
-          });
-          return {
-            content: [{ type: "text", text: content }],
-          };
-        }
+        case "generate_content":
+          return await contentHandlers.handleGenerate(args);
+        case "refine_content":
+          return await contentHandlers.handleRefine(args);
+        case "analyze_content":
+          return await contentHandlers.handleAnalyze(args);
 
         // Keyword research tools
         case "keyword_data":
@@ -149,8 +121,23 @@ app.get('/sse', async (req, res) => {
 
 // POST endpoint for messages
 app.post('/message', express.json(), (req, res) => {
-  // This is handled by the SSE transport
-  res.status(200).end();
+  const sessionId = typeof req.query.sessionId === 'string' ? req.query.sessionId : undefined;
+
+  if (!sessionId) {
+    res.status(400).send('Missing sessionId query parameter');
+    return;
+  }
+
+  const transport = sseTransports.get(sessionId);
+
+  if (!transport) {
+    res.status(400).send('No transport found for sessionId');
+    return;
+  }
+
+  return transport.handlePostMessage(req, res, req.body).catch((error) => {
+    console.error('Failed to handle SSE message:', error);
+  });
 });
 
 app.listen(PORT, () => {
