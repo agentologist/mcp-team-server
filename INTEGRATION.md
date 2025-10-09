@@ -167,6 +167,58 @@ Use the analyze_content tool to analyze this blog post:
 [paste your content]
 ```
 
+## Connecting Riley (HTTP/SSE)
+
+Riley runs inside the Agentologist platform and talks to the MCP server over HTTP Server-Sent Events (SSE). The `dist/server-http.js` process deployed on Railway is designed for this mode.
+
+### Prerequisites
+- The Content Tool MCP service is deployed (or running locally with `npm run dev:http`).
+- Riley has network access to the MCP server URL (for example, via Railway's private networking or localhost during development).
+
+### Environment Variables for Riley
+Configure Riley with the SSE endpoint:
+
+```
+AI_CONTENT_GENERATOR_MCP_URL=http://content-tool-mcp.railway.internal/sse
+```
+
+For local development:
+
+```
+AI_CONTENT_GENERATOR_MCP_URL=http://localhost:3002/sse
+```
+
+If Riley runs in the same container as the MCP server and can invoke it via stdio:
+
+```
+AI_CONTENT_GENERATOR_MCP_URL=/app/content-tool-mcp/dist/index.js
+```
+
+### SSE Connection Flow
+1. Riley issues `GET {AI_CONTENT_GENERATOR_MCP_URL}` (e.g., `/sse`). The MCP server responds with an SSE stream and announces the POST target `/message?sessionId=<id>`.
+2. Riley stores the `sessionId` and POSTs JSON-RPC payloads to `/message?sessionId=<id>`. The MCP server forwards those messages to the transport and streams results back over the SSE channel.
+3. When Riley shuts down, close the SSE stream so the MCP server can clean up the session automatically.
+
+> Tip: Use a keep-alive (periodic ping or small tool call) if your runtime aggressively times out idle HTTP connections.
+
+### Health and Diagnostics
+- `GET http://localhost:3002/health` confirms the HTTP MCP server is responding.
+- Each tool call returns a JSON-RPC result containing the tool output or an error message.
+- Server logs show “📡 New SSE connection…” and “✅ MCP server connected via SSE” when the handshake succeeds.
+
+## Onboarding Other Specialists
+
+When future specialists need MCP access, choose the transport that best fits their runtime:
+
+- **Stdio** – run `node dist/index.js` and communicate over stdin/stdout (ideal for CLI or local agents).
+- **HTTP/SSE** – connect to `/sse` and post messages to `/message` as described above (ideal for services that can’t manage stdio).
+
+For either transport:
+1. Set `CONTENT_API_URL` so the MCP server reaches the AI Content Generator backend.
+2. Run `npm install && npm run build` after pulling updates to keep the compiled artifacts current.
+3. Verify connectivity: `curl http://localhost:3002/health` for the MCP server and `curl http://localhost:3001/api/mcp/health` for the backend.
+4. Document the integration details (transport, endpoint URL, credentials) in that specialist’s runbook so others can replicate the setup quickly.
+
 ## Troubleshooting
 
 ### MCP Server Can't Connect to Backend
