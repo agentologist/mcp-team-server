@@ -16,13 +16,15 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
+import { keywordTools } from "./tools/keywordTools.js";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
-// Temporary echo tool so server has at least 1 tool for testing
-// This will be replaced with real tools later
+// All available tools
 const allTools: any[] = [
+  ...keywordTools,
   {
     name: "echo",
     description: "Echo back the input text (test tool)",
@@ -81,27 +83,46 @@ app.get('/sse', async (req, res) => {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    // Handle echo tool (temporary test tool)
-    if (name === "echo") {
+    try {
+      // Handle keyword research tool
+      if (name === "enhanced_keyword_research") {
+        return await enhancedKeywordResearch(args as any);
+      }
+
+      // Handle echo tool (temporary test tool)
+      if (name === "echo") {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Echo: ${(args as any)?.text || "no input"}`,
+            },
+          ],
+        };
+      }
+
+      // Unknown tool
       return {
         content: [
           {
             type: "text",
-            text: `Echo: ${(args as any)?.text || "no input"}`,
+            text: `Error: Unknown tool "${name}"`,
           },
         ],
+        isError: true,
+      };
+    } catch (error) {
+      console.error(`Error executing tool ${name}:`, error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          },
+        ],
+        isError: true,
       };
     }
-
-    // Unknown tool
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error: Unknown tool "${name}"`,
-        },
-      ],
-    };
   });
 
   await server.connect(transport);
