@@ -17,12 +17,8 @@ export const KEYWORD_RESEARCH_TOOLS: Tool[] = [
           type: "string",
           description: "Country code (e.g., 'US', 'UK', 'CA'). Default: 'US'",
         },
-        apiKey: {
-          type: "string",
-          description: "Keywords Everywhere API key",
-        },
       },
-      required: ["keywords", "apiKey"],
+      required: ["keywords"],
     },
   },
   {
@@ -43,12 +39,8 @@ export const KEYWORD_RESEARCH_TOOLS: Tool[] = [
           type: "number",
           description: "Maximum number of results. Default: 100",
         },
-        apiKey: {
-          type: "string",
-          description: "Keywords Everywhere API key",
-        },
       },
-      required: ["keyword", "apiKey"],
+      required: ["keyword"],
     },
   },
   {
@@ -75,12 +67,8 @@ export const KEYWORD_RESEARCH_TOOLS: Tool[] = [
             maxResults: { type: "number" },
           },
         },
-        apiKey: {
-          type: "string",
-          description: "Keywords Everywhere API key",
-        },
       },
-      required: ["seedKeyword", "apiKey"],
+      required: ["seedKeyword"],
     },
   },
   {

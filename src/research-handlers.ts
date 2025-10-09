@@ -9,13 +9,9 @@ export class ResearchHandlers {
   // ==================== KEYWORD RESEARCH HANDLERS ====================
 
   async handleKeywordData(args: any) {
-    const { keywords, country = 'US', apiKey } = args;
+    const { keywords, country = 'US' } = args;
 
-    if (!apiKey) {
-      throw new Error('Keywords Everywhere API key is required');
-    }
-
-    const result = await this.apiClient.getKeywordData(keywords, apiKey, country);
+    const result = await this.apiClient.getKeywordData(keywords, country);
 
     return {
       content: [
@@ -28,13 +24,9 @@ export class ResearchHandlers {
   }
 
   async handleRelatedKeywords(args: any) {
-    const { keyword, country = 'US', limit = 100, apiKey } = args;
+    const { keyword, country = 'US', limit = 100 } = args;
 
-    if (!apiKey) {
-      throw new Error('Keywords Everywhere API key is required');
-    }
-
-    const result = await this.apiClient.getRelatedKeywords(keyword, apiKey, country, limit);
+    const result = await this.apiClient.getRelatedKeywords(keyword, country, limit);
 
     return {
       content: [
@@ -47,15 +39,10 @@ export class ResearchHandlers {
   }
 
   async handleEnhancedKeywordResearch(args: any) {
-    const { seedKeyword, country = 'US', options = {}, apiKey } = args;
-
-    if (!apiKey) {
-      throw new Error('Keywords Everywhere API key is required');
-    }
+    const { seedKeyword, country = 'US', options = {} } = args;
 
     const result = await this.apiClient.performEnhancedKeywordResearch(
       seedKeyword,
-      apiKey,
       country,
       options
     );

@@ -120,11 +120,10 @@ export class ContentApiClient {
 
   // ==================== KEYWORD RESEARCH METHODS ====================
 
-  async getKeywordData(keywords: string[], apiKey: string, country: string = 'US'): Promise<any> {
+  async getKeywordData(keywords: string[], country: string = 'US'): Promise<any> {
     try {
       const response = await this.client.post('/api/research/keywords/data', {
         keywords,
-        apiKey,
         country,
       });
       return response.data;
@@ -136,11 +135,10 @@ export class ContentApiClient {
     }
   }
 
-  async getRelatedKeywords(keyword: string, apiKey: string, country: string = 'US', limit: number = 100): Promise<any> {
+  async getRelatedKeywords(keyword: string, country: string = 'US', limit: number = 100): Promise<any> {
     try {
       const response = await this.client.post('/api/research/keywords/related', {
         keyword,
-        apiKey,
         country,
         limit,
       });
@@ -153,11 +151,10 @@ export class ContentApiClient {
     }
   }
 
-  async performEnhancedKeywordResearch(seedKeyword: string, apiKey: string, country: string = 'US', options: any = {}): Promise<any> {
+  async performEnhancedKeywordResearch(seedKeyword: string, country: string = 'US', options: any = {}): Promise<any> {
     try {
       const response = await this.client.post('/api/research/keywords/enhanced', {
         seedKeyword,
-        apiKey,
         country,
         options,
       });
