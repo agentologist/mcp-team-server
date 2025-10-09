@@ -20,9 +20,11 @@ class ContentToolMCPServer {
   private contentHandlers: ContentToolHandlers;
 
   constructor() {
-    // Get API URL from environment or use default
+    // Get API URL and token from environment
     const apiUrl = process.env.CONTENT_API_URL || 'http://localhost:3001';
-    this.apiClient = new ContentApiClient(apiUrl);
+    const apiToken = process.env.CONTENT_API_TOKEN;
+
+    this.apiClient = new ContentApiClient(apiUrl, apiToken);
     this.researchHandlers = new ResearchHandlers(this.apiClient);
     this.contentHandlers = new ContentToolHandlers(this.apiClient);
 

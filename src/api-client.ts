@@ -36,13 +36,20 @@ export interface ContentApiResponse {
 export class ContentApiClient {
   private client: AxiosInstance;
 
-  constructor(baseURL: string) {
+  constructor(baseURL: string, apiToken?: string) {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add authorization header if API token is provided
+    if (apiToken) {
+      headers['Authorization'] = `Bearer ${apiToken}`;
+    }
+
     this.client = axios.create({
       baseURL,
       timeout: 60000, // 60 second timeout for AI generation
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
     });
   }
 
