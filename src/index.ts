@@ -8,23 +8,23 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
+import { keywordTools } from "./tools/keywordTools.js";
 
 /**
  * MCP Team Server
  *
- * This is a clean protocol layer ready for tool definitions.
- * Tools will be added in the future as separate microservices are built.
+ * Protocol layer that exposes microservices as tools for AI agents.
  *
- * To add tools:
- * 1. Create /src/tools/ directory
- * 2. Define tool schemas in tool files (e.g., keyword-research.ts)
- * 3. Import and register tools in this file
+ * Connected Tools:
+ * - enhanced_keyword_research: Keyword research via Keywords Everywhere API
  */
 
 class MCPTeamServer {
   private server: Server;
-  // Temporary echo tool so server has at least 1 tool for testing
   private tools: any[] = [
+    ...keywordTools,
+    // Keep echo tool for testing
     {
       name: "echo",
       description: "Echo back the input text (test tool)",
@@ -76,27 +76,46 @@ class MCPTeamServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
 
-      // Handle echo tool (temporary test tool)
-      if (name === "echo") {
+      try {
+        // Handle keyword research tool
+        if (name === "enhanced_keyword_research") {
+          return await enhancedKeywordResearch(args as any);
+        }
+
+        // Handle echo tool (test tool)
+        if (name === "echo") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Echo: ${(args as any)?.text || "no input"}`,
+              },
+            ],
+          };
+        }
+
+        // Unknown tool
         return {
           content: [
             {
               type: "text",
-              text: `Echo: ${(args as any)?.text || "no input"}`,
+              text: `Error: Unknown tool "${name}"`,
             },
           ],
+          isError: true,
+        };
+      } catch (error) {
+        console.error(`Error executing tool ${name}:`, error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
+          isError: true,
         };
       }
-
-      // Unknown tool
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: Unknown tool "${name}"`,
-          },
-        ],
-      };
     });
   }
 
