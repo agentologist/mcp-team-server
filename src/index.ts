@@ -9,7 +9,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
+import { trendHeadlines } from "./handlers/headlineHandler.js";
 import { keywordTools } from "./tools/keywordTools.js";
+import { headlineTools } from "./tools/headlineTools.js";
 
 /**
  * MCP Team Server
@@ -18,12 +20,14 @@ import { keywordTools } from "./tools/keywordTools.js";
  *
  * Connected Tools:
  * - enhanced_keyword_research: Keyword research via Keywords Everywhere API
+ * - trend_headlines: Trending headline generation via headline-trend-service
  */
 
 class MCPTeamServer {
   private server: Server;
   private tools: any[] = [
     ...keywordTools,
+    ...headlineTools,
     // Keep echo tool for testing
     {
       name: "echo",
@@ -80,6 +84,11 @@ class MCPTeamServer {
         // Handle keyword research tool
         if (name === "enhanced_keyword_research") {
           return await enhancedKeywordResearch(args as any);
+        }
+
+        // Handle trend headlines tool
+        if (name === "trend_headlines") {
+          return await trendHeadlines(args as any);
         }
 
         // Handle echo tool (test tool)
