@@ -56,6 +56,13 @@ Output: {
             'real estate investing',
             'content marketing'
           ]
+        },
+        count: {
+          type: 'number',
+          description: 'Number of headlines to generate (default: 15). Generate more when user needs variety, fewer for quick exploration.',
+          default: 15,
+          minimum: 5,
+          maximum: 25
         }
       },
       required: ['focusKeyword']

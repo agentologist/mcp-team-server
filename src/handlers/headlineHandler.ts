@@ -8,6 +8,7 @@ const HEADLINE_SERVICE_URL = process.env.HEADLINE_SERVICE_URL || 'http://headlin
 
 export interface TrendHeadlinesInput {
   focusKeyword: string;
+  count?: number;
 }
 
 /**
@@ -20,7 +21,8 @@ export async function trendHeadlines(input: TrendHeadlinesInput) {
   try {
     console.log('📰 [Trend Headlines] Calling service:', {
       endpoint: url,
-      focusKeyword: input.focusKeyword
+      focusKeyword: input.focusKeyword,
+      count: input.count || 15
     });
 
     const response = await axios.post(url, input, {
