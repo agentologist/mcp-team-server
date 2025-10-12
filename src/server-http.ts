@@ -17,7 +17,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
+import { trendHeadlines } from "./handlers/headlineHandler.js";
 import { keywordTools } from "./tools/keywordTools.js";
+import { headlineTools } from "./tools/headlineTools.js";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -25,6 +27,7 @@ const PORT = parseInt(process.env.PORT || '3001', 10);
 // All available tools
 const allTools: any[] = [
   ...keywordTools,
+  ...headlineTools,
   {
     name: "echo",
     description: "Echo back the input text (test tool)",
@@ -87,6 +90,11 @@ app.get('/sse', async (req, res) => {
       // Handle keyword research tool
       if (name === "enhanced_keyword_research") {
         return await enhancedKeywordResearch(args as any);
+      }
+
+      // Handle trend headlines tool
+      if (name === "trend_headlines") {
+        return await trendHeadlines(args as any);
       }
 
       // Handle echo tool (temporary test tool)
