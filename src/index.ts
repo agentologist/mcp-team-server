@@ -65,6 +65,7 @@ class MCPTeamServer {
   private logStartup() {
     console.error(`✅ MCP Team Server started`);
     console.error(`✅ Loaded ${this.tools.length} tool definition(s)`);
+    console.error(`📋 Available tools: ${this.tools.map(t => t.name).join(', ')}`);
     if (this.tools.length === 1 && this.tools[0].name === "echo") {
       console.error(`⚠️  Running with temporary 'echo' test tool`);
     }
