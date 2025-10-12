@@ -171,6 +171,7 @@ app.listen(PORT, '::' as any, () => {
   console.log('');
   console.log(`✅ MCP Team Server started on port ${PORT}`);
   console.log(`✅ Loaded ${allTools.length} tool definitions`);
+  console.log(`📋 Available tools: ${allTools.map((t: any) => t.name).join(', ')}`);
   if (allTools.length === 0) {
     console.log(`⚠️  No tools defined yet - server is ready for tool definitions`);
   }
