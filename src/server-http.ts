@@ -2,9 +2,6 @@
 /**
  * HTTP/SSE Server for MCP Team Server
  * Provides HTTP endpoints for server-to-server communication
- *
- * This is a clean protocol layer ready for tool definitions.
- * Tools will be added in the future as separate microservices are built.
  */
 import dotenv from 'dotenv';
 dotenv.config();
@@ -18,8 +15,10 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
 import { trendHeadlines } from "./handlers/headlineHandler.js";
+import { deepTopicResearch } from "./handlers/researchHandler.js";
 import { keywordTools } from "./tools/keywordTools.js";
 import { headlineTools } from "./tools/headlineTools.js";
+import { researchTools } from "./tools/researchTools.js";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -28,20 +27,7 @@ const PORT = parseInt(process.env.PORT || '3001', 10);
 const allTools: any[] = [
   ...keywordTools,
   ...headlineTools,
-  {
-    name: "echo",
-    description: "Echo back the input text (test tool)",
-    inputSchema: {
-      type: "object",
-      properties: {
-        text: {
-          type: "string",
-          description: "Text to echo back",
-        },
-      },
-      required: ["text"],
-    },
-  },
+  ...researchTools
 ];
 
 const sseTransports = new Map<string, SSEServerTransport>();
@@ -51,6 +37,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     tools: allTools.length,
+    toolNames: allTools.map((t: any) => t.name),
     server: 'mcp-team-server',
     version: '1.0.0',
   });
@@ -97,16 +84,9 @@ app.get('/sse', async (req, res) => {
         return await trendHeadlines(args as any);
       }
 
-      // Handle echo tool (temporary test tool)
-      if (name === "echo") {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Echo: ${(args as any)?.text || "no input"}`,
-            },
-          ],
-        };
+      // Handle deep topic research tool
+      if (name === "deep_topic_research") {
+        return await deepTopicResearch(args as any);
       }
 
       // Unknown tool
@@ -172,9 +152,6 @@ app.listen(PORT, '::' as any, () => {
   console.log(`✅ MCP Team Server started on port ${PORT}`);
   console.log(`✅ Loaded ${allTools.length} tool definitions`);
   console.log(`📋 Available tools: ${allTools.map((t: any) => t.name).join(', ')}`);
-  if (allTools.length === 0) {
-    console.log(`⚠️  No tools defined yet - server is ready for tool definitions`);
-  }
   console.log(`📡 Binding to IPv6 (::) for Railway compatibility`);
   console.log('');
   console.log(`📊 Endpoints:`);
