@@ -10,8 +10,10 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
 import { trendHeadlines } from "./handlers/headlineHandler.js";
+import { deepTopicResearch } from "./handlers/researchHandler.js";
 import { keywordTools } from "./tools/keywordTools.js";
 import { headlineTools } from "./tools/headlineTools.js";
+import { researchTools } from "./tools/researchTools.js";
 
 /**
  * MCP Team Server
@@ -21,6 +23,7 @@ import { headlineTools } from "./tools/headlineTools.js";
  * Connected Tools:
  * - enhanced_keyword_research: Keyword research via Keywords Everywhere API
  * - trend_headlines: Trending headline generation via headline-trend-service
+ * - deep_topic_research: Comprehensive topic research via deep-dive-research-service
  */
 
 class MCPTeamServer {
@@ -28,21 +31,7 @@ class MCPTeamServer {
   private tools: any[] = [
     ...keywordTools,
     ...headlineTools,
-    // Keep echo tool for testing
-    {
-      name: "echo",
-      description: "Echo back the input text (test tool)",
-      inputSchema: {
-        type: "object",
-        properties: {
-          text: {
-            type: "string",
-            description: "Text to echo back",
-          },
-        },
-        required: ["text"],
-      },
-    },
+    ...researchTools
   ];
 
   constructor() {
@@ -65,10 +54,7 @@ class MCPTeamServer {
   private logStartup() {
     console.error(`✅ MCP Team Server started`);
     console.error(`✅ Loaded ${this.tools.length} tool definition(s)`);
-    console.error(`📋 Available tools: ${this.tools.map(t => t.name).join(', ')}`); // Debug: Show tool names
-    if (this.tools.length === 1 && this.tools[0].name === "echo") {
-      console.error(`⚠️  Running with temporary 'echo' test tool`);
-    }
+    console.error(`📋 Available tools: ${this.tools.map(t => t.name).join(', ')}`);
   }
 
   private setupHandlers() {
@@ -92,16 +78,9 @@ class MCPTeamServer {
           return await trendHeadlines(args as any);
         }
 
-        // Handle echo tool (test tool)
-        if (name === "echo") {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Echo: ${(args as any)?.text || "no input"}`,
-              },
-            ],
-          };
+        // Handle deep topic research tool
+        if (name === "deep_topic_research") {
+          return await deepTopicResearch(args as any);
         }
 
         // Unknown tool
