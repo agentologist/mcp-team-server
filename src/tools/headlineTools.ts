@@ -66,7 +66,10 @@ Output: {
         }
       },
       required: ['focusKeyword']
-    }
+    },
+
+    // Agent access control - Riley only
+    allowedAgents: ['riley']
   }
 ];
 

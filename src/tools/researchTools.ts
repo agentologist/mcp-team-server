@@ -64,7 +64,10 @@ export const researchTools = [
         }
       },
       required: ['keyword', 'headline']
-    }
+    },
+
+    // Agent access control - Riley only
+    allowedAgents: ['riley']
   }
 ];
 

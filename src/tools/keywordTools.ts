@@ -88,7 +88,10 @@ export const keywordTools = [
         { required: ['topic'] },
         { required: ['topics'] }
       ]
-    }
+    },
+
+    // Agent access control - Riley only
+    allowedAgents: ['riley']
   }
 ];
 
