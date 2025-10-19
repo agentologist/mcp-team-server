@@ -32,13 +32,15 @@ interface BlogWriterArgs {
   };
 }
 
-const BLOG_WRITER_SERVICE_URL = process.env.BLOG_WRITER_SERVICE_URL || 'http://localhost:3002/api/blog/generate';
+const BLOG_WRITER_SERVICE_URL = process.env.BLOG_WRITER_SERVICE_URL || 'http://localhost:3002';
 
 export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
   console.log(`📝 Calling blog-writer-service for: "${args.content_brief.title}"`);
 
+  const url = `${BLOG_WRITER_SERVICE_URL}/api/blog/generate`;
+
   try {
-    const response = await fetch(BLOG_WRITER_SERVICE_URL, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
