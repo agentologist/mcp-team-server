@@ -35,9 +35,11 @@ interface BlogWriterArgs {
 const BLOG_WRITER_SERVICE_URL = process.env.BLOG_WRITER_SERVICE_URL || 'http://localhost:3002';
 
 export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
-  console.log(`📝 Calling blog-writer-service for: "${args.content_brief.title}"`);
-
   const url = `${BLOG_WRITER_SERVICE_URL}/api/blog/generate`;
+
+  console.log(`📝 Calling blog-writer-service for: "${args.content_brief.title}"`);
+  console.log(`📝 Blog Writer URL: ${url}`);
+  console.log(`📝 BLOG_WRITER_SERVICE_URL env var: ${process.env.BLOG_WRITER_SERVICE_URL || 'NOT SET'}`);
 
   try {
     const response = await fetch(url, {
