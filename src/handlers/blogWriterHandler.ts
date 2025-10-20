@@ -42,13 +42,20 @@ export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
   console.log(`📝 BLOG_WRITER_SERVICE env var: ${process.env.BLOG_WRITER_SERVICE || 'NOT SET'}`);
 
   try {
+    // Blog writing can take 2-3 minutes for comprehensive 1500+ word content
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3-minute timeout
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(args),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -86,14 +93,27 @@ export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
   } catch (error) {
     console.error('❌ Blog Writer Service error:', error);
 
+    const isTimeout = error instanceof Error && error.name === 'AbortError';
+
+    let errorMessage: string;
+    let details: string;
+
+    if (isTimeout) {
+      errorMessage = 'Blog generation timed out after 3 minutes. The blog-writer-service may need optimization or the content brief may be too complex.';
+      details = 'Timeout occurred while generating blog content. Consider simplifying the content brief or increasing timeout limits.';
+    } else {
+      errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      details = 'Failed to generate blog content. Please check that the blog-writer-service is running on port 3002.';
+    }
+
     return {
       content: [
         {
           type: 'text',
           text: JSON.stringify({
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error occurred',
-            details: 'Failed to generate blog content. Please check that the blog-writer-service is running on port 3002.'
+            error: errorMessage,
+            details: details
           }, null, 2)
         }
       ],
