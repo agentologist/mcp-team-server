@@ -33,7 +33,7 @@ interface BlogWriterArgs {
 }
 
 const BLOG_WRITER_SERVICE_URL = process.env.BLOG_WRITER_SERVICE || 'http://localhost:3002';
-const BLOG_WRITER_TIMEOUT_MS = parseInt(process.env.BLOG_WRITER_TIMEOUT_MS || '300000', 10);
+const BLOG_WRITER_TIMEOUT_MS = parseInt(process.env.BLOG_WRITER_TIMEOUT_MS || '420000', 10); // 7 minutes - must be longer than Anthropic SDK timeout (6min)
 const BLOG_WRITER_MODEL = process.env.BLOG_WRITER_MODEL || 'claude-3-5-sonnet-20241022';
 
 export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
