@@ -70,7 +70,8 @@ export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
       throw new Error('Blog Writer Service returned empty content');
     }
 
-    console.log(`✅ Blog content generated successfully (${Math.round(data.blog_markdown.split(/\s+/).length)} words)`);
+    const serviceWordCount = data.metadata?.word_count ?? Math.round(data.blog_markdown.split(/\s+/).filter(Boolean).length);
+    console.log(`✅ Blog content generated successfully (${serviceWordCount} words)`);
 
     return {
       content: [
@@ -83,9 +84,16 @@ export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
             metadata: {
               title: args.content_brief.title,
               focus_keyword: args.content_brief.focus_keyword,
-              word_count: Math.round(data.blog_markdown.split(/\s+/).length),
+              slug: data.metadata?.slug,
+              canonical_url: data.metadata?.canonical_url,
+              word_count: serviceWordCount,
               character_count: data.blog_markdown.length,
               html_length: data.blog_html?.length || 0,
+              internal_links_required: data.metadata?.internal_links_required,
+              internal_links_added: data.metadata?.internal_links_added,
+              external_links_expected: data.metadata?.external_links_expected,
+              external_links_added: data.metadata?.external_links_added,
+              notes: data.metadata?.notes,
               service: 'blog-writer-service',
               model: BLOG_WRITER_MODEL
             }
