@@ -77,11 +77,13 @@ export async function generateBlogContent(args: BlogWriterArgs): Promise<any> {
           text: JSON.stringify({
             success: true,
             blog_markdown: data.blog_markdown,
+            blog_html: data.blog_html, // TipTap-compatible HTML format
             metadata: {
               title: args.content_brief.title,
               focus_keyword: args.content_brief.focus_keyword,
               word_count: Math.round(data.blog_markdown.split(/\s+/).length),
               character_count: data.blog_markdown.length,
+              html_length: data.blog_html?.length || 0,
               service: 'blog-writer-service',
               model: 'claude-sonnet-4-5-20250929'
             }
