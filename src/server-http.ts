@@ -17,10 +17,12 @@ import { enhancedKeywordResearch } from "./handlers/keywordResearchHandler.js";
 import { trendHeadlines } from "./handlers/headlineHandler.js";
 import { deepTopicResearch } from "./handlers/researchHandler.js";
 import { generateBlogContent } from "./handlers/blogWriterHandler.js";
+import { generateSocialPosts } from "./handlers/socialPostWriterHandler.js";
 import { keywordTools } from "./tools/keywordTools.js";
 import { headlineTools } from "./tools/headlineTools.js";
 import { researchTools } from "./tools/researchTools.js";
 import { blogWriterTools } from "./tools/blogWriterTools.js";
+import { socialPostWriterTools } from "./tools/socialPostWriterTools.js";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -30,7 +32,8 @@ const allTools: any[] = [
   ...keywordTools,
   ...headlineTools,
   ...researchTools,
-  ...blogWriterTools
+  ...blogWriterTools,
+  ...socialPostWriterTools
 ];
 
 const sseTransports = new Map<string, SSEServerTransport>();
@@ -95,6 +98,11 @@ app.get('/sse', async (req, res) => {
       // Handle blog writer service tool
       if (name === "blog_writer_service") {
         return await generateBlogContent(args as any);
+      }
+
+      // Handle social post writer service tool
+      if (name === "generate_social_posts") {
+        return await generateSocialPosts(args as any);
       }
 
       // Unknown tool
